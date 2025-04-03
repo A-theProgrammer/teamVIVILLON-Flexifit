@@ -1,4 +1,4 @@
-# FlexiFit - Gym Planner Software
+# FlexiFit - Workout Planner Software
 
 ## Project Overview
 **FlexiBuddy** is an adaptive application designed to function as a gym planner software. Built by **Team Vivilon**, this project aims to explore and implement the concepts of adaptive applications by providing a personalized workout experience. 

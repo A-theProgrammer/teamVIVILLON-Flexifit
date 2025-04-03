@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUser } from '@/contexts/UserContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import { PlanSelector } from '@/components/dashboard/PlanSelector';
 import { OverviewTab } from '@/components/dashboard/OverviewTab';
 import { WorkoutsTab } from '@/components/dashboard/WorkoutsTab';
 import { ProgressTab } from '@/components/dashboard/ProgressTab';
 import { NotAuthenticatedView } from '@/components/dashboard/NotAuthenticatedView';
+import { ProfileSection } from '@/components/dashboard/ProfileSection';
 
 const DashboardPage = () => {
   const { currentPlan, workoutPlans, user, isAuthenticated, completedExercises, toggleExerciseCompletion } = useUser();
@@ -49,11 +51,16 @@ const DashboardPage = () => {
     return <NotAuthenticatedView />;
   }
   
+  // Get user name safely
+  const userName = user?.staticAttributes?.basicInformation?.name || 'Your';
+  
   return (
     <div className="container mx-auto py-6 px-4">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Your Fitness Dashboard</h1>
+          <h1 className="text-3xl font-bold">
+            {userName} Fitness Dashboard
+          </h1>
           <p className="text-muted-foreground">Track your progress and manage your workout plans</p>
         </div>
         <PlanSelector
@@ -69,6 +76,7 @@ const DashboardPage = () => {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="workouts">Workouts</TabsTrigger>
           <TabsTrigger value="progress">Progress</TabsTrigger>
+          <TabsTrigger value="profile">Profile</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview">
@@ -86,7 +94,11 @@ const DashboardPage = () => {
         </TabsContent>
         
         <TabsContent value="progress">
-          <ProgressTab />
+          <ProgressTab user={user} />
+        </TabsContent>
+        
+        <TabsContent value="profile">
+          <ProfileSection user={user} />
         </TabsContent>
       </Tabs>
     </div>

@@ -23,7 +23,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "dark", // Changed default to dark
   storageKey = "flexifit-ui-theme",
   ...props
 }: ThemeProviderProps) {

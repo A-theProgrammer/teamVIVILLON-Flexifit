@@ -14,12 +14,14 @@ import Index from "./pages/Index";
 import ChatbotPage from "./pages/ChatbotPage";
 import DashboardPage from "./pages/DashboardPage";
 import NotFound from "./pages/NotFound";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="system">
+    <ThemeProvider defaultTheme="dark">
       <UserProvider>
         <ChatbotProvider>
           <TooltipProvider>
@@ -33,6 +35,8 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/chatbot" element={<ChatbotPage />} />
                     <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>

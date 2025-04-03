@@ -8,7 +8,8 @@ export type Message = {
   timestamp: Date;
 };
 
-export type ChatCommand = 'updateplan' | 'save plan' | '+1' | 'delete plan';
+// Changed from specific strings to string type to accommodate dynamic commands
+export type ChatCommand = string;
 
 export interface CommandInfo {
   command: ChatCommand;

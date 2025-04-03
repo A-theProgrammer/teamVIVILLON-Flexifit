@@ -19,6 +19,7 @@ const ChatbotPage = () => {
   const [selectedBodyAreas, setSelectedBodyAreas] = useState<string[]>([]);
   const [showBodySelector, setShowBodySelector] = useState(false);
   const messageEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const { 
     messages, 
     isTyping, 
@@ -60,13 +61,22 @@ const ChatbotPage = () => {
     }
   }, []);
 
-  // Show body area selector when workout generation is suggested
+  // Detect when to show body area selector
   useEffect(() => {
     const lastBotMessage = [...messages].reverse().find(m => m.sender === 'bot');
-    if (lastBotMessage && lastBotMessage.text.includes("Type \"updateplan\"")) {
+    if (lastBotMessage && 
+        (lastBotMessage.text.toLowerCase().includes("updateplan") || 
+         lastBotMessage.text.toLowerCase().includes("generate a workout"))) {
       setShowBodySelector(true);
     }
   }, [messages]);
+  
+  // Hide body selector when workout plan is generated
+  useEffect(() => {
+    if (suggestedWorkoutPlan) {
+      setShowBodySelector(false);
+    }
+  }, [suggestedWorkoutPlan]);
   
   const handleSendMessage = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -125,9 +135,19 @@ const ChatbotPage = () => {
     navigate('/dashboard');
   };
   
+  const handleBodySelectorComplete = () => {
+    setShowBodySelector(false);
+    // Use the selected body areas to update the plan
+    if (selectedBodyAreas.length > 0) {
+      executeCommand(`updateplan for ${selectedBodyAreas.join(', ')}`);
+    } else {
+      executeCommand('updateplan');
+    }
+  };
+  
   return (
     <div className="container mx-auto py-6 px-4 md:py-8">
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-200px)]">
         {/* Chat Interface */}
         <div className="flex-1 flex flex-col">
           <div className="flex items-center justify-between mb-4">
@@ -142,8 +162,11 @@ const ChatbotPage = () => {
             </div>
           </div>
           
-          <Card className="flex-1 flex flex-col h-[600px]">
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <Card className="flex-1 flex flex-col h-full overflow-hidden">
+            <div 
+              className="flex-1 overflow-y-auto p-4 space-y-4" 
+              ref={chatContainerRef}
+            >
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -176,12 +199,14 @@ const ChatbotPage = () => {
                 </div>
               )}
               
-              {showBodySelector && (
+              {showBodySelector && !suggestedWorkoutPlan && (
                 <div className="flex justify-start w-full">
                   <div className="bg-secondary text-secondary-foreground rounded-xl p-3 w-full">
+                    <p className="mb-2 font-medium">Select body areas to focus on:</p>
                     <BodyAreaSelector 
                       selectedAreas={selectedBodyAreas}
                       onChange={setSelectedBodyAreas}
+                      onComplete={handleBodySelectorComplete}
                     />
                   </div>
                 </div>
@@ -246,7 +271,7 @@ const ChatbotPage = () => {
         </div>
         
         {/* Workout Plan Preview */}
-        <div className="lg:w-1/2 xl:w-1/3">
+        <div className="lg:w-1/2 h-full">
           {suggestedWorkoutPlan ? (
             <div className="h-full flex flex-col">
               <div className="flex justify-between items-center mb-4">

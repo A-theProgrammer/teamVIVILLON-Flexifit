@@ -3,7 +3,7 @@ import React from 'react';
 
 interface CompletionRateProps {
   completionRate: number;
-  className?: string; // Added className prop
+  className?: string;
 }
 
 export function CompletionRate({ completionRate, className = "" }: CompletionRateProps) {

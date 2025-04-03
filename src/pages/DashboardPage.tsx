@@ -22,7 +22,7 @@ const DashboardPage = () => {
     ? workoutPlans.find(plan => plan.id === selectedPlanId) || currentPlan
     : currentPlan;
   
-  // Sample data for charts and metrics - in a real application, this would be calculated from actual user data
+  // Calculate metrics based on completed exercises
   const weeklyWorkouts = [
     { name: 'Mon', workouts: completedExercises.filter(id => id.startsWith('1-')).length > 0 ? 1 : 0 },
     { name: 'Tue', workouts: completedExercises.filter(id => id.startsWith('2-')).length > 0 ? 1 : 0 },
@@ -94,7 +94,7 @@ const DashboardPage = () => {
         </TabsContent>
         
         <TabsContent value="progress">
-          <ProgressTab user={user} />
+          {user && <ProgressTab user={user} />}
         </TabsContent>
         
         <TabsContent value="profile">

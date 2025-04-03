@@ -6,22 +6,35 @@ import { ProgressChart } from './ProgressChart';
 import { CompletionRate } from './CompletionRate';
 import { ProfileSection } from './ProfileSection';
 import { UserModel } from '@/types/user';
+import { useUser } from '@/contexts/UserContext';
 
 interface ProgressTabProps {
   user: UserModel;
 }
 
 export const ProgressTab = ({ user }: ProgressTabProps) => {
-  // Sample data for the weekly workouts chart
+  const { completedExercises, workoutPlans } = useUser();
+  
+  // Calculate workout completion data from completed exercises
   const weeklyWorkouts = [
-    { name: 'Mon', workouts: 1 },
-    { name: 'Tue', workouts: 0 },
-    { name: 'Wed', workouts: 1 },
-    { name: 'Thu', workouts: 1 },
-    { name: 'Fri', workouts: 0 },
-    { name: 'Sat', workouts: 1 },
-    { name: 'Sun', workouts: 0 },
+    { name: 'Mon', workouts: completedExercises.filter(id => id.startsWith('1-')).length > 0 ? 1 : 0 },
+    { name: 'Tue', workouts: completedExercises.filter(id => id.startsWith('2-')).length > 0 ? 1 : 0 },
+    { name: 'Wed', workouts: completedExercises.filter(id => id.startsWith('3-')).length > 0 ? 1 : 0 },
+    { name: 'Thu', workouts: completedExercises.filter(id => id.startsWith('4-')).length > 0 ? 1 : 0 },
+    { name: 'Fri', workouts: completedExercises.filter(id => id.startsWith('5-')).length > 0 ? 1 : 0 },
+    { name: 'Sat', workouts: completedExercises.filter(id => id.startsWith('6-')).length > 0 ? 1 : 0 },
+    { name: 'Sun', workouts: completedExercises.filter(id => id.startsWith('7-')).length > 0 ? 1 : 0 },
   ];
+  
+  // Calculate completion rate based on actual data
+  const totalExercisesCompleted = completedExercises.length;
+  const totalPossibleExercises = workoutPlans.reduce(
+    (total, plan) => total + plan.days.reduce(
+      (dayTotal, day) => dayTotal + day.exercises.length, 0
+    ), 0
+  ) || 1; // Avoid division by zero
+  
+  const completionRate = Math.min(100, Math.round((totalExercisesCompleted / totalPossibleExercises) * 100));
 
   return (
     <div className="space-y-6">
@@ -39,7 +52,7 @@ export const ProgressTab = ({ user }: ProgressTabProps) => {
           </CardHeader>
           <CardContent>
             <CompletionRate 
-              completionRate={75} 
+              completionRate={completionRate} 
               className="w-full aspect-square max-w-[200px] mx-auto"
             />
           </CardContent>

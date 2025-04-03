@@ -1,9 +1,10 @@
 
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogIn, UserPlus } from "lucide-react";
 import { ThemeToggle } from "../theme/theme-toggle";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -41,6 +42,21 @@ export function Navbar() {
               {route.name}
             </NavLink>
           ))}
+
+          <div className="flex items-center gap-2 ml-4">
+            <Button variant="outline" size="sm" asChild className="flex items-center gap-1">
+              <NavLink to="/login">
+                <LogIn className="w-4 h-4" />
+                <span>Login</span>
+              </NavLink>
+            </Button>
+            <Button size="sm" asChild className="flex items-center gap-1">
+              <NavLink to="/register">
+                <UserPlus className="w-4 h-4" />
+                <span>Sign Up</span>
+              </NavLink>
+            </Button>
+          </div>
         </div>
 
         <div className="flex items-center gap-4">
@@ -76,6 +92,22 @@ export function Navbar() {
                 {route.name}
               </NavLink>
             ))}
+            
+            {/* Mobile auth buttons */}
+            <div className="flex flex-col gap-2 pt-2 pb-1">
+              <Button variant="outline" asChild className="w-full justify-center">
+                <NavLink to="/login" onClick={() => setIsMenuOpen(false)}>
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Login
+                </NavLink>
+              </Button>
+              <Button asChild className="w-full justify-center">
+                <NavLink to="/register" onClick={() => setIsMenuOpen(false)}>
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Sign Up
+                </NavLink>
+              </Button>
+            </div>
           </div>
         </div>
       )}

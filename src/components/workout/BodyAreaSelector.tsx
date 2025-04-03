@@ -2,10 +2,12 @@
 import React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 interface BodyAreaSelectorProps {
   selectedAreas: string[];
   onChange: (areas: string[]) => void;
+  onComplete: () => void;
 }
 
 const bodyAreas = [
@@ -18,7 +20,7 @@ const bodyAreas = [
   { id: 'cardio', label: 'Cardio' },
 ];
 
-export function BodyAreaSelector({ selectedAreas, onChange }: BodyAreaSelectorProps) {
+export function BodyAreaSelector({ selectedAreas, onChange, onComplete }: BodyAreaSelectorProps) {
   const handleCheckboxChange = (area: string) => {
     if (selectedAreas.includes(area)) {
       onChange(selectedAreas.filter((a) => a !== area));
@@ -43,6 +45,11 @@ export function BodyAreaSelector({ selectedAreas, onChange }: BodyAreaSelectorPr
             </Label>
           </div>
         ))}
+      </div>
+      <div className="mt-4 flex justify-end">
+        <Button onClick={onComplete} disabled={selectedAreas.length === 0}>
+          Confirm Selection
+        </Button>
       </div>
     </div>
   );

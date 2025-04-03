@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { UserModel, WorkoutPlan } from '@/types/user';
 import { toast } from 'sonner';
@@ -152,6 +151,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
           dynamicAttributes: {
             ...user.dynamicAttributes,
             workoutProgress: {
+              ...user.dynamicAttributes.workoutProgress,
               completedExercises: [...(user.dynamicAttributes.workoutProgress?.completedExercises || []), exerciseId],
               lastWorkout: now,
               streakDays: (user.dynamicAttributes.workoutProgress?.streakDays || 0) + 1
@@ -172,7 +172,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             ...user.dynamicAttributes,
             workoutProgress: {
               ...user.dynamicAttributes.workoutProgress,
-              completedExercises: user.dynamicAttributes.workoutProgress.completedExercises.filter(id => id !== exerciseId)
+              completedExercises: user.dynamicAttributes.workoutProgress.completedExercises.filter(id => id !== exerciseId),
+              // Decrease streak if applicable
+              streakDays: Math.max(0, (user.dynamicAttributes.workoutProgress.streakDays || 1) - 1)
             }
           }
         };
@@ -183,40 +185,46 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = (userId: string = generateUserId()) => {
     // Create basic user structure if not exists
-    if (!user) {
-      const newUser: UserModel = {
-        userId,
-        staticAttributes: {
-          basicInformation: {
-            age: 0,
-            gender: 'other',
-            height: 0,
-            weight: 0,
-          },
-          fitnessGoals: {
-            primaryGoal: 'general_health',
-          },
-          exerciseBackground: {
-            experienceLevel: 'beginner',
-            currentExerciseHabits: {
-              frequencyPerWeek: 0,
-              sessionDuration: 0,
-            },
+    const newUser: UserModel = {
+      userId,
+      staticAttributes: {
+        basicInformation: {
+          age: 0,
+          gender: 'other',
+          height: 0,
+          weight: 0,
+          name: 'User',
+          location: 'Unknown',
+        },
+        fitnessGoals: {
+          primaryGoal: 'general_health',
+        },
+        exerciseBackground: {
+          experienceLevel: 'beginner',
+          currentExerciseHabits: {
+            frequencyPerWeek: 0,
+            sessionDuration: 0,
           },
         },
-        dynamicAttributes: {
-          trainingData: [],
-          workoutProgress: {
-            completedExercises: [],
-            lastWorkout: '',
-            streakDays: 0
-          },
-          savedWorkoutPlans: []
+      },
+      dynamicAttributes: {
+        trainingData: [],
+        workoutProgress: {
+          completedExercises: [],
+          lastWorkout: '',
+          streakDays: 0
         },
-      };
+        savedWorkoutPlans: []
+      },
+    };
+    
+    // If we already have a user, keep their existing data
+    if (user) {
+      setIsAuthenticated(true);
+    } else {
       setUserState(newUser);
+      setIsAuthenticated(true);
     }
-    setIsAuthenticated(true);
     toast.success('Logged in successfully!');
   };
 

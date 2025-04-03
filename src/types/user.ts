@@ -8,6 +8,9 @@ export interface UserModel {
       height: number;
       weight: number;
       healthStatus?: string[];
+      name?: string;
+      location?: string;
+      email?: string;
     };
     fitnessGoals: {
       primaryGoal: "fat_loss" | "muscle_gain" | "endurance" | "general_health";
@@ -88,4 +91,14 @@ export interface WorkoutExercise {
   restTime?: number;
   intensity?: string;
   notes?: string;
+}
+
+export interface BasicInformation {
+  age: number;
+  gender: string;
+  height: number;
+  weight: number;
+  name?: string;
+  location?: string;
+  email?: string;
 }

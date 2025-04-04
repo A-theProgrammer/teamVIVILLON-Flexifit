@@ -1,11 +1,35 @@
+// src/utils/workoutGenerator.ts
+
 import { ConversationState } from '@/types/chat';
-import { WorkoutPlan } from '@/types/user';
+import { WorkoutPlan, WorkoutExercise, UserModel } from '@/types/user';
+import { AdaptiveEngine } from '@/adaptiveEngine/AdaptiveEngine';
 
 export const generateWorkoutPlan = (
   conversationState: ConversationState, 
   userGoal?: string, 
-  userExperience?: string
+  userExperience?: string,
+  user?: UserModel | null,              // Added user parameter
+  currentPlan?: WorkoutPlan | null,     // Added current plan parameter
+  feedbackHistory?: any[]               // Added feedback history parameter
 ): WorkoutPlan => {
+  // Check if we should use the adaptive algorithm
+  if (user && (currentPlan || user.dynamicAttributes?.workoutProgress?.completedExercises?.length > 10)) {
+    try {
+      const adaptiveEngine = new AdaptiveEngine();
+      console.log("Using adaptive engine to generate workout plan");
+      
+      // Generate new plan using adaptive algorithm
+      return adaptiveEngine.generateAdaptiveWorkoutPlan(
+        user, 
+        currentPlan || null, 
+        feedbackHistory || []
+      );
+    } catch (error) {
+      console.error('Adaptive engine error, falling back to standard generator:', error);
+      // Fall back to standard generation if adaptive engine fails
+    }
+  }
+  
   // This is a mock function that would be replaced with actual API call
   // to generate a workout plan based on user information
   const goals = userGoal || conversationState.fitnessGoals || 'general_health';
@@ -165,6 +189,32 @@ export const getExerciseForFocus = (focus: string, location: string = 'both'): a
       { name: 'Active Recovery - Light Walking', duration: 20, intensity: 'Low' },
       { name: 'Mobility Work', duration: 15, intensity: 'Low' },
       { name: 'Rest Day', intensity: 'None', notes: 'Take time to recover properly' }
+    ],
+    // Added specialized focus areas for targeted body parts
+    'Chest': [
+      { name: 'Standard Push-Ups', sets: 3, reps: 12, restTime: 60, intensity: 'Medium' },
+      { name: 'Incline Push-Ups', sets: 3, reps: 15, restTime: 60, intensity: 'Medium' },
+      { name: 'Decline Push-Ups', sets: 3, reps: 10, restTime: 60, intensity: 'Medium' }
+    ],
+    'Back': [
+      { name: 'Superman Hold', sets: 3, duration: 30, restTime: 45, intensity: 'Medium' },
+      { name: 'Bent-Over Resistance Band Rows', sets: 3, reps: 12, restTime: 45, intensity: 'Medium' },
+      { name: 'Reverse Snow Angels', sets: 3, reps: 12, restTime: 45, intensity: 'Medium' }
+    ],
+    'Shoulders': [
+      { name: 'Pike Push-Ups', sets: 3, reps: 10, restTime: 60, intensity: 'Medium' },
+      { name: 'Arm Circles', sets: 3, reps: 20, restTime: 30, intensity: 'Low' },
+      { name: 'Resistance Band Shoulder Press', sets: 3, reps: 12, restTime: 60, intensity: 'Medium' }
+    ],
+    'Arms': [
+      { name: 'Diamond Push-Ups', sets: 3, reps: 10, restTime: 60, intensity: 'Medium' },
+      { name: 'Resistance Band Bicep Curls', sets: 3, reps: 15, restTime: 45, intensity: 'Medium' },
+      { name: 'Tricep Dips', sets: 3, reps: 12, restTime: 60, intensity: 'Medium' }
+    ],
+    'Legs': [
+      { name: 'Bodyweight Squats', sets: 3, reps: 15, restTime: 60, intensity: 'Medium' },
+      { name: 'Walking Lunges', sets: 3, reps: 20, restTime: 60, intensity: 'Medium' },
+      { name: 'Calf Raises', sets: 3, reps: 20, restTime: 45, intensity: 'Medium' }
     ]
   };
   
@@ -213,6 +263,27 @@ export const getExerciseForFocus = (focus: string, location: string = 'both'): a
       { name: 'Active Recovery - Light Cardio', duration: 20, intensity: 'Low' },
       { name: 'Stretching Session', duration: 20, intensity: 'Low' },
       { name: 'Rest Day', intensity: 'None', notes: 'Take time to recover properly' }
+    ],
+    // Added specialized focus areas for targeted body parts
+    'Chest': [
+      { name: 'Barbell Bench Press', sets: 4, reps: 10, restTime: 90, intensity: 'High' },
+      { name: 'Incline Dumbbell Press', sets: 3, reps: 12, restTime: 90, intensity: 'Medium' },
+      { name: 'Cable Flyes', sets: 3, reps: 15, restTime: 60, intensity: 'Medium' }
+    ],
+    'Back': [
+      { name: 'Barbell Rows', sets: 4, reps: 10, restTime: 90, intensity: 'High' },
+      { name: 'Lat Pulldown', sets: 3, reps: 12, restTime: 60, intensity: 'Medium' },
+      { name: 'Seated Cable Row', sets: 3, reps: 12, restTime: 60, intensity: 'Medium' }
+    ],
+    'Shoulders': [
+      { name: 'Overhead Press', sets: 4, reps: 8, restTime: 90, intensity: 'High' },
+      { name: 'Lateral Raises', sets: 3, reps: 15, restTime: 60, intensity: 'Medium' },
+      { name: 'Face Pulls', sets: 3, reps: 15, restTime: 60, intensity: 'Medium' }
+    ],
+    'Arms': [
+      { name: 'Barbell Curls', sets: 3, reps: 12, restTime: 60, intensity: 'Medium' },
+      { name: 'Skull Crushers', sets: 3, reps: 12, restTime: 60, intensity: 'Medium' },
+      { name: 'Cable Tricep Pushdown', sets: 3, reps: 15, restTime: 60, intensity: 'Medium' }
     ]
   };
   
@@ -230,5 +301,6 @@ export const getExerciseForFocus = (focus: string, location: string = 'both'): a
       : (homeExercises[focus] || homeExercises['Cardio']);
   }
   
+  // Select a random exercise from the available options
   return availableExercises[Math.floor(Math.random() * availableExercises.length)];
 };

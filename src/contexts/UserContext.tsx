@@ -15,6 +15,8 @@ type UserContextType = {
   login: (userId: string) => void;
   logout: () => void;
   toggleExerciseCompletion: (exerciseId: string, completed: boolean) => void;
+  feedbackHistory: any[];
+  submitExerciseFeedback: (feedback: any) => void;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -24,6 +26,7 @@ const generateUserId = () => `user_${Math.random().toString(36).substring(2, 15)
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUserState] = useState<UserModel | null>(null);
+  const [feedbackHistory, setFeedbackHistory] = useState<any[]>([]);
   const [currentPlan, setCurrentPlan] = useState<WorkoutPlan | null>(null);
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [completedExercises, setCompletedExercises] = useState<string[]>([]);
@@ -96,6 +99,19 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     localStorage.setItem('flexifit_completed_exercises', JSON.stringify(completedExercises));
   }, [completedExercises]);
+  
+  useEffect(() => {
+    const storedFeedback = localStorage.getItem('flexifit_feedback_history');
+    
+    if (storedFeedback) {
+      try {
+        const parsedFeedback = JSON.parse(storedFeedback);
+        setFeedbackHistory(parsedFeedback);
+      } catch (error) {
+        console.error('Error parsing stored feedback data:', error);
+      }
+    }
+  }, []);
 
   const setUser = (userData: UserModel) => {
     setUserState(userData);
@@ -241,6 +257,19 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast.info('Logged out');
   };
 
+  const submitExerciseFeedback = (feedback: any) => {
+    const newFeedback = {
+      ...feedback,
+      timestamp: new Date().toISOString()
+    };
+    
+    setFeedbackHistory(prev => [...prev, newFeedback]);
+    localStorage.setItem('flexifit_feedback_history', JSON.stringify([...feedbackHistory, newFeedback]));
+    
+    // Can add other feedback processing logic here
+    toast.success('Feedback recorded, your next plan will be adjusted accordingly');
+  };
+  
   const value = {
     user,
     currentPlan,
@@ -254,6 +283,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     logout,
     toggleExerciseCompletion,
+    feedbackHistory,
+    submitExerciseFeedback,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

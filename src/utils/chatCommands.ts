@@ -1,6 +1,5 @@
-
 import { ChatCommand, ConversationState } from '@/types/chat';
-import { WorkoutPlan } from '@/types/user';
+import { WorkoutPlan, UserModel } from '@/types/user';
 import { generateWorkoutPlan } from './workoutGenerator';
 
 export const processCommand = (
@@ -10,14 +9,31 @@ export const processCommand = (
   savePlan: (plan: WorkoutPlan) => void,
   currentPlan: WorkoutPlan | null,
   deletePlan: () => void,
-  suggestedWorkoutPlan: WorkoutPlan | null
+  suggestedWorkoutPlan: WorkoutPlan | null,
+  user?: UserModel | null,             // Add user parameter
+  feedbackHistory?: any[]              // Add feedback history parameter
 ): string => {
   switch (command) {
     case 'updateplan':
-      const updatedPlan = generateWorkoutPlan(conversationState);
+      // Pass user data to generate an adaptive workout plan
+      const updatedPlan = generateWorkoutPlan(
+        conversationState,
+        undefined,
+        undefined,
+        user,                          // Pass user data
+        currentPlan,                   // Pass current plan
+        feedbackHistory                // Pass feedback history
+      );
+      
       setSuggestedWorkoutPlan(updatedPlan);
       const forPerson = conversationState.forWhom === 'self' ? 'you' : conversationState.forWhom;
-      return `I've created a personalized workout plan for ${forPerson} based on our conversation. The plan is now visible on the right side of your screen. Would you like to save it to your dashboard?`;
+      
+      // Customize message if adaptive engine was used
+      if (user && (currentPlan || user.dynamicAttributes?.workoutProgress?.completedExercises?.length > 10)) {
+        return `I've created an adaptive workout plan for ${forPerson} based on your progress and feedback. This plan has been optimized based on your performance data. The plan is now visible on the right side of your screen.`;
+      } else {
+        return `I've created a personalized workout plan for ${forPerson} based on our conversation. The plan is now visible on the right side of your screen. Would you like to save it to your dashboard?`;
+      }
     
     case 'save plan':
       if (suggestedWorkoutPlan) {
@@ -28,7 +44,16 @@ export const processCommand = (
       }
     
     case '+1':
-      const alternativePlan = generateWorkoutPlan(conversationState);
+      // Generate alternative plan with adaptive features if available
+      const alternativePlan = generateWorkoutPlan(
+        conversationState,
+        undefined,
+        undefined,
+        user,                          // Pass user data
+        currentPlan,                   // Pass current plan
+        feedbackHistory                // Pass feedback history
+      );
+      
       setSuggestedWorkoutPlan(alternativePlan);
       return "Here's an alternative workout plan. Let me know if this one works better for you.";
     

@@ -1,9 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 import { WorkoutPlan, WorkoutExercise } from '@/types/user';
 import { toast } from 'sonner';
+import { useUser } from '@/contexts/UserContext';
+import { ExerciseFeedback } from './ExerciseFeedback';
 
 interface WorkoutTodoListProps {
   plan: WorkoutPlan;
@@ -16,6 +19,8 @@ export function WorkoutTodoList({
   completedExercises, 
   onToggleExercise 
 }: WorkoutTodoListProps) {
+  const [showFeedbackFor, setShowFeedbackFor] = useState<string | null>(null);
+  const { submitExerciseFeedback } = useUser();
   
   // Get current day of the week (0-6, where 0 is Sunday)
   const today = new Date().getDay();
@@ -34,46 +39,86 @@ export function WorkoutTodoList({
     }
   };
   
+  // Helper function to get exercise name from ID
+  const getExerciseName = (id: string): string => {
+    const [dayNum, exerciseIndex] = id.split('-').map(Number);
+    const day = plan.days.find(d => d.dayNumber === dayNum);
+    if (day && day.exercises[exerciseIndex]) {
+      return day.exercises[exerciseIndex].name;
+    }
+    return "Exercise";
+  };
+  
+  // Handle feedback submission
+  const handleFeedbackSubmit = (feedback: any) => {
+    submitExerciseFeedback(feedback);
+    setShowFeedbackFor(null);
+  };
+  
   return (
     <Card>
       <CardHeader>
         <CardTitle>Today's Workout</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          {todaysWorkout.exercises.map((exercise: WorkoutExercise, index: number) => {
-            const exerciseId = `${todaysWorkout.dayNumber}-${index}`;
-            const isCompleted = completedExercises.includes(exerciseId);
-            
-            return (
-              <div 
-                key={exerciseId} 
-                className="flex items-center space-x-3 p-2 rounded-md bg-secondary/30"
-              >
-                <Checkbox 
-                  checked={isCompleted} 
-                  onCheckedChange={(checked) => 
-                    handleToggleExercise(exerciseId, checked as boolean)
-                  } 
-                  id={exerciseId}
-                />
-                <div className="flex-1">
-                  <label 
-                    htmlFor={exerciseId}
-                    className={`font-medium cursor-pointer ${isCompleted ? 'line-through text-muted-foreground' : ''}`}
-                  >
-                    {exercise.name}
-                  </label>
-                  <p className="text-xs text-muted-foreground">
-                    {exercise.sets && `${exercise.sets} sets`}
-                    {exercise.reps && ` × ${exercise.reps} reps`}
-                    {exercise.duration && ` × ${exercise.duration} sec`}
-                  </p>
+        {showFeedbackFor ? (
+          <ExerciseFeedback 
+            exerciseId={showFeedbackFor}
+            exerciseName={getExerciseName(showFeedbackFor)}
+            onSubmitFeedback={handleFeedbackSubmit}
+            onCancel={() => setShowFeedbackFor(null)}
+          />
+        ) : (
+          <div className="space-y-2">
+            {todaysWorkout.exercises.map((exercise: WorkoutExercise, index: number) => {
+              const exerciseId = `${todaysWorkout.dayNumber}-${index}`;
+              const isCompleted = completedExercises.includes(exerciseId);
+              
+              return (
+                <div 
+                  key={exerciseId} 
+                  className="flex flex-col space-y-2 p-2 rounded-md bg-secondary/30"
+                >
+                  <div className="flex items-center space-x-3">
+                    <Checkbox 
+                      checked={isCompleted} 
+                      onCheckedChange={(checked) => 
+                        handleToggleExercise(exerciseId, checked as boolean)
+                      } 
+                      id={exerciseId}
+                    />
+                    <div className="flex-1">
+                      <label 
+                        htmlFor={exerciseId}
+                        className={`font-medium cursor-pointer ${isCompleted ? 'line-through text-muted-foreground' : ''}`}
+                      >
+                        {exercise.name}
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        {exercise.sets && `${exercise.sets} sets`}
+                        {exercise.reps && ` × ${exercise.reps} reps`}
+                        {exercise.duration && ` × ${exercise.duration} sec`}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {isCompleted && (
+                    <div className="ml-7">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="text-xs h-7 px-2"
+                        onClick={() => setShowFeedbackFor(exerciseId)}
+                      >
+                        Provide Feedback
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

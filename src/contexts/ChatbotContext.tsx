@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import { toast } from 'sonner';
 import { useUser } from './UserContext';
@@ -13,7 +12,7 @@ const ChatbotContext = createContext<ChatbotContextType | undefined>(undefined);
 export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [suggestedWorkoutPlan, setSuggestedWorkoutPlan] = useState<WorkoutPlan | null>(null);
   const [processingAudio, setProcessingAudio] = useState(false);
-  const { user, savePlan, currentPlan, deletePlan } = useUser();
+  const { user, savePlan, currentPlan, deletePlan, feedbackHistory } = useUser(); // Add feedbackHistory
   
   const {
     messages,
@@ -43,7 +42,9 @@ export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ child
         savePlan, 
         currentPlan, 
         deletePlan,
-        suggestedWorkoutPlan
+        suggestedWorkoutPlan,
+        user,               // Pass user data
+        feedbackHistory     // Pass feedback history
       );
     }
     

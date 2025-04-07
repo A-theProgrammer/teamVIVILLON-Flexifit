@@ -17,9 +17,15 @@ interface ExerciseFeedbackProps {
     completionTime: number;
     notes?: string;
   }) => void;
+  onCancel?: () => void;
 }
 
-export function ExerciseFeedback({ exerciseId, exerciseName, onSubmitFeedback }: ExerciseFeedbackProps) {
+export function ExerciseFeedback({ 
+  exerciseId, 
+  exerciseName, 
+  onSubmitFeedback,
+  onCancel 
+}: ExerciseFeedbackProps) {
   const [difficulty, setDifficulty] = useState(3);
   const [fatigue, setFatigue] = useState(3);
   const [enjoyment, setEnjoyment] = useState(3);
@@ -39,13 +45,6 @@ export function ExerciseFeedback({ exerciseId, exerciseName, onSubmitFeedback }:
     });
     
     toast.success('Feedback submitted, thank you for your input!');
-    
-    // Reset form
-    setDifficulty(3);
-    setFatigue(3);
-    setEnjoyment(3);
-    setCompletionTime(0);
-    setNotes('');
   };
   
   return (
@@ -113,7 +112,14 @@ export function ExerciseFeedback({ exerciseId, exerciseName, onSubmitFeedback }:
             />
           </div>
           
-          <Button type="submit" className="w-full">Submit Feedback</Button>
+          <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Submit Feedback</Button>
+            {onCancel && (
+              <Button type="button" variant="outline" onClick={onCancel}>
+                Cancel
+              </Button>
+            )}
+          </div>
         </form>
       </CardContent>
     </Card>

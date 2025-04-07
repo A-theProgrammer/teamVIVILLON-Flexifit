@@ -2,7 +2,8 @@ import { UserProfiler } from './UserProfiler'
 import { FeedbackAnalyzer } from './FeedbackAnalyzer';
 import { WorkoutAdjuster } from './WorkoutAdjuster';
 import { UserState, AdjustmentResult } from './types';
-import { WorkoutPlan, UserModel, WorkoutDay } from '@/types/user';
+import { WorkoutPlan, UserModel, WorkoutDay, WorkoutExercise } from '@/types/user';
+import { getExerciseForFocus } from '@/utils/workoutGenerator';
 
 export class AdaptiveEngine {
   private userProfiler: UserProfiler;
@@ -37,74 +38,119 @@ export class AdaptiveEngine {
   }
   
   private applyAdjustments(plan: WorkoutPlan, adjustments: AdjustmentResult): WorkoutPlan {
-    // Create copy of plan
+    // Create a deep copy of the plan to avoid mutating the original plan
     const newPlan: WorkoutPlan = {
       ...plan,
-      days: JSON.parse(JSON.stringify(plan.days)), // Deep copy
+      days: JSON.parse(JSON.stringify(plan.days)), // Deep copy of the days array
       description: `${plan.description} (Adaptively Adjusted)`
     };
-    
-    // Apply exercise adjustments
+  
+    // ---------------------------
+    // Apply exercise adjustments (modify or replace individual exercises)
     for (const change of adjustments.exerciseChanges) {
       const [dayNumber, exerciseIndex] = change.exerciseId.split('-').map(Number);
       const dayIndex = newPlan.days.findIndex(d => d.dayNumber === dayNumber);
-      
+  
       if (dayIndex === -1 || exerciseIndex >= newPlan.days[dayIndex].exercises.length) {
-        continue; // Skip invalid adjustments
+        continue; // Skip if the specified day or exercise is not found
       }
-      
+  
       if (change.adjustmentType === 'replace' && change.newExercise) {
-        // Replace exercise
+        // Replace the existing exercise entirely with a new exercise
         newPlan.days[dayIndex].exercises[exerciseIndex] = change.newExercise;
       } else if (change.adjustmentType === 'modify' && change.paramChanges) {
-        // Modify parameters
+        // Modify specific parameters (e.g., sets, reps, duration) of the exercise
         newPlan.days[dayIndex].exercises[exerciseIndex] = {
           ...newPlan.days[dayIndex].exercises[exerciseIndex],
           ...change.paramChanges
         };
       }
     }
+    // ---------------------------
     
+    // ---------------------------
+    // Apply plan structure adjustments (adding, removing days, or adjusting rest days)
     for (const change of adjustments.planStructureChanges) {
       if (change.type === 'addDay' && newPlan.days.length < 7) {
-        // Add new training day
+        // Determine the new day number by incrementing the last day's number
         const lastDay = newPlan.days[newPlan.days.length - 1];
         const newDayNumber = lastDay.dayNumber + 1;
         
-        // Create a new training day focused on a different area
-        const existingFocuses = new Set(newPlan.days.map(d => d.focus));
-        let newFocus = 'Full Body';
+        // --- Optimized Focus Selection Logic Start ---
+        // Collect statistics for existing training days based on their focus.
+        // We calculate the training load (sum of sets * reps or duration) for each day
+        // and count how many days use each focus.
+        interface FocusStats {
+          count: number;
+          totalLoad: number;
+        }
+        const focusStats: Record<string, FocusStats> = {};
         
-        // Try to find an unused focus
+        newPlan.days.forEach(day => {
+          let dayLoad = 0;
+          day.exercises.forEach(ex => {
+            if (ex.sets && ex.reps) {
+              dayLoad += ex.sets * ex.reps;
+            } else if (ex.duration) {
+              dayLoad += ex.duration; // Adjust for duration-based exercises as needed
+            }
+          });
+          if (!focusStats[day.focus]) {
+            focusStats[day.focus] = { count: 0, totalLoad: 0 };
+          }
+          focusStats[day.focus].count += 1;
+          focusStats[day.focus].totalLoad += dayLoad;
+        });
+        
+        // Define a list of possible training focuses
         const possibleFocuses = ['Upper Body', 'Lower Body', 'Core', 'Cardio', 'Full Body'];
-        for (const focus of possibleFocuses) {
-          if (!existingFocuses.has(focus)) {
-            newFocus = focus;
-            break;
+        
+        // Step 1: Choose a focus that hasn't been used yet (if available)
+        let newFocus: string | undefined = possibleFocuses.find(focus => !focusStats[focus]);
+        
+        // Step 2: If all focuses are used, choose the one with the lowest combined score.
+        // The score is defined as: score = count + λ * (totalLoad / count)
+        // A lower score indicates that focus area has been trained less frequently or with lower load.
+        if (!newFocus) {
+          const lambda = 0.01; // Weight factor to balance count and average load
+          let bestScore = Infinity;
+          for (const focus of possibleFocuses) {
+            const stats = focusStats[focus];
+            const averageLoad = stats.totalLoad / stats.count;
+            const score = stats.count + lambda * averageLoad;
+            if (score < bestScore) {
+              bestScore = score;
+              newFocus = focus;
+            }
           }
         }
         
-        // Create new day
+        // Fallback to a default focus if none is selected
+        if (!newFocus) {
+          newFocus = 'Full Body';
+        }
+        // --- Optimized Focus Selection Logic End ---
+        
+        // Generate a new training day using the selected focus.
+        // Instead of creating a default exercise locally, call getExerciseForFocus from the workoutGenerator module.
         const newDay: WorkoutDay = {
           dayNumber: newDayNumber,
           focus: newFocus,
-          exercises: Array(3).fill(0).map(() => this.generateDefaultExercise(newFocus))
+          exercises: Array(3)
+            .fill(0)
+            .map(() => getExerciseForFocus(newFocus)) // Reuse centralized exercise generation logic
         };
         
         newPlan.days.push(newDay);
       } else if (change.type === 'removeDay' && typeof change.dayIndex === 'number') {
-        // Remove training day
+        // Remove the training day at the specified index
         newPlan.days.splice(change.dayIndex, 1);
       } else if (change.type === 'changeRest') {
-        // Add rest day or adjust rest
-        const dayIndices = newPlan.days.map((_, i) => i);
-        // Find most suitable day to be rest day
-        const restDayIndex = dayIndices.find(i => 
-          !newPlan.days[i].focus.toLowerCase().includes('rest')
+        // Adjust an existing day to convert it into an active recovery/rest day
+        const restDayIndex = newPlan.days.findIndex(day =>
+          !day.focus.toLowerCase().includes('rest')
         );
-        
-        if (restDayIndex !== undefined) {
-          // Convert this day to a rest day
+        if (restDayIndex !== -1) {
           newPlan.days[restDayIndex].focus = 'Active Recovery';
           newPlan.days[restDayIndex].exercises = [
             {
@@ -129,54 +175,14 @@ export class AdaptiveEngine {
         }
       }
     }
+    // ---------------------------
     
-    // Update plan metadata
+    // Update plan metadata to reflect that adjustments have been applied
     newPlan.name = `${newPlan.name} (Adjusted)`;
     newPlan.createdAt = new Date().toISOString();
     
     return newPlan;
   }
   
-  private generateDefaultExercise(focus: string): any {
-    // Use exercise generator from workout plan generator
-    const defaultExercises: Record<string, any> = {
-      'Upper Body': {
-        name: 'Push-Ups',
-        sets: 3,
-        reps: 12,
-        restTime: 60,
-        intensity: 'Medium'
-      },
-      'Lower Body': {
-        name: 'Bodyweight Squats',
-        sets: 3,
-        reps: 15,
-        restTime: 60,
-        intensity: 'Medium'
-      },
-      'Core': {
-        name: 'Plank',
-        sets: 3,
-        duration: 45,
-        restTime: 45,
-        intensity: 'Medium'
-      },
-      'Cardio': {
-        name: 'Jumping Jacks',
-        sets: 3,
-        duration: 60,
-        restTime: 30,
-        intensity: 'Medium'
-      },
-      'Full Body': {
-        name: 'Burpees',
-        sets: 3,
-        reps: 10,
-        restTime: 60,
-        intensity: 'High'
-      }
-    };
-    
-    return defaultExercises[focus] || defaultExercises['Full Body'];
-  }
+  
 }

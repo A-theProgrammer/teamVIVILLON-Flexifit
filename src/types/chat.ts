@@ -29,6 +29,7 @@ export type ConversationState = {
   injuries?: string[];
   healthConditions?: string[];
   targetBodyAreas?: string[]; // New field for body areas
+  timeAvailable: number
 };
 
 export type ChatbotContextType = {

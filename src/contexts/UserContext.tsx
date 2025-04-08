@@ -7,6 +7,7 @@ type UserContextType = {
   currentPlan: WorkoutPlan | null;
   workoutPlans: WorkoutPlan[];
   completedExercises: string[];
+  feedbackHistory: any[]; // Add feedback history
   setUser: (user: UserModel) => void;
   updateUser: (updates: Partial<UserModel>) => void;
   savePlan: (plan: WorkoutPlan) => void;
@@ -15,8 +16,7 @@ type UserContextType = {
   login: (userId: string) => void;
   logout: () => void;
   toggleExerciseCompletion: (exerciseId: string, completed: boolean) => void;
-  feedbackHistory: any[];
-  submitExerciseFeedback: (feedback: any) => void;
+  submitExerciseFeedback: (feedback: any) => void; // Add feedback submission
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -26,10 +26,10 @@ const generateUserId = () => `user_${Math.random().toString(36).substring(2, 15)
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUserState] = useState<UserModel | null>(null);
-  const [feedbackHistory, setFeedbackHistory] = useState<any[]>([]);
   const [currentPlan, setCurrentPlan] = useState<WorkoutPlan | null>(null);
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [completedExercises, setCompletedExercises] = useState<string[]>([]);
+  const [feedbackHistory, setFeedbackHistory] = useState<any[]>([]); // Add feedback state
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   // Initialize or load from localStorage on mount
@@ -38,6 +38,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const storedPlan = localStorage.getItem('flexifit_current_plan');
     const storedPlans = localStorage.getItem('flexifit_workout_plans');
     const storedExercises = localStorage.getItem('flexifit_completed_exercises');
+    const storedFeedback = localStorage.getItem('flexifit_feedback_history'); // Add feedback loading
     
     if (storedUser) {
       try {
@@ -75,6 +76,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Error parsing completed exercises:', error);
       }
     }
+    
+    // Load feedback history
+    if (storedFeedback) {
+      try {
+        const parsedFeedback = JSON.parse(storedFeedback);
+        setFeedbackHistory(parsedFeedback);
+      } catch (error) {
+        console.error('Error parsing stored feedback data:', error);
+      }
+    }
   }, []);
 
   // Save changes to localStorage
@@ -100,18 +111,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('flexifit_completed_exercises', JSON.stringify(completedExercises));
   }, [completedExercises]);
   
+  // Save feedback history
   useEffect(() => {
-    const storedFeedback = localStorage.getItem('flexifit_feedback_history');
-    
-    if (storedFeedback) {
-      try {
-        const parsedFeedback = JSON.parse(storedFeedback);
-        setFeedbackHistory(parsedFeedback);
-      } catch (error) {
-        console.error('Error parsing stored feedback data:', error);
-      }
+    if (feedbackHistory.length > 0) {
+      localStorage.setItem('flexifit_feedback_history', JSON.stringify(feedbackHistory));
     }
-  }, []);
+  }, [feedbackHistory]);
 
   const setUser = (userData: UserModel) => {
     setUserState(userData);
@@ -198,6 +203,19 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
   };
+  
+  // Add feedback submission handler
+  const submitExerciseFeedback = (feedback: any) => {
+    const newFeedback = {
+      ...feedback,
+      timestamp: new Date().toISOString()
+    };
+    
+    const updatedFeedbackHistory = [...feedbackHistory, newFeedback];
+    setFeedbackHistory(updatedFeedbackHistory);
+    
+    toast.success('Feedback recorded, your next plan will be adjusted accordingly');
+  };
 
   const login = (userId: string = generateUserId()) => {
     // Create basic user structure if not exists
@@ -249,32 +267,22 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('flexifit_current_plan');
     localStorage.removeItem('flexifit_workout_plans');
     localStorage.removeItem('flexifit_completed_exercises');
+    localStorage.removeItem('flexifit_feedback_history'); // Clear feedback on logout
     setUserState(null);
     setCurrentPlan(null);
     setWorkoutPlans([]);
     setCompletedExercises([]);
+    setFeedbackHistory([]); // Clear feedback state
     setIsAuthenticated(false);
     toast.info('Logged out');
   };
 
-  const submitExerciseFeedback = (feedback: any) => {
-    const newFeedback = {
-      ...feedback,
-      timestamp: new Date().toISOString()
-    };
-    
-    setFeedbackHistory(prev => [...prev, newFeedback]);
-    localStorage.setItem('flexifit_feedback_history', JSON.stringify([...feedbackHistory, newFeedback]));
-    
-    // Can add other feedback processing logic here
-    toast.success('Feedback recorded, your next plan will be adjusted accordingly');
-  };
-  
   const value = {
     user,
     currentPlan,
     workoutPlans,
     completedExercises,
+    feedbackHistory, // Expose feedback history
     setUser,
     updateUser,
     savePlan,
@@ -283,8 +291,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     logout,
     toggleExerciseCompletion,
-    feedbackHistory,
-    submitExerciseFeedback,
+    submitExerciseFeedback, // Expose feedback submission
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

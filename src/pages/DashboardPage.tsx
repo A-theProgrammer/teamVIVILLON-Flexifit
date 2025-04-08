@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUser } from '@/contexts/UserContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
+import { AdaptiveInsights } from '@/components/dashboard/AdaptiveInsights';
 import { PlanSelector } from '@/components/dashboard/PlanSelector';
 import { OverviewTab } from '@/components/dashboard/OverviewTab';
 import { WorkoutsTab } from '@/components/dashboard/WorkoutsTab';
@@ -87,6 +87,11 @@ const DashboardPage = () => {
             completedExercises={completedExercises}
             toggleExerciseCompletion={toggleExerciseCompletion}
           />
+          
+          {/* Add Adaptive Insights component */}
+          <div className="mt-6">
+            <AdaptiveInsights />
+          </div>
         </TabsContent>
         
         <TabsContent value="workouts">

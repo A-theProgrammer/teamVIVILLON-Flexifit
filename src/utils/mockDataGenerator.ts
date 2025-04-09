@@ -1,4 +1,3 @@
-// src/utils/mockDataGenerator.ts
 import { UserFeedback } from '@/adaptiveEngine/types';
 import { WorkoutPlan } from '@/types/user';
 

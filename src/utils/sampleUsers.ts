@@ -1,4 +1,3 @@
-// src/utils/sampleUsers.ts
 import { UserModel } from '@/types/user';
 import { generateWorkoutPlan } from './workoutGenerator';
 

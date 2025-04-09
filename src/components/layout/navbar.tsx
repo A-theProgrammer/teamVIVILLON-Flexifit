@@ -16,7 +16,8 @@ export function Navbar() {
   const routes = [
     { name: "Home", path: "/" },
     { name: "Chatbot", path: "/chatbot" },
-    { name: "Dashboard", path: "/dashboard" }
+    { name: "Dashboard", path: "/dashboard" },
+    { name: "Adaptive Demo", path: "/adaptive-demo" }
   ];
 
   return (

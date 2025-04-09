@@ -16,6 +16,7 @@ import DashboardPage from "./pages/DashboardPage";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import AdaptiveDemoPage from "./pages/AdaptiveDemoPage";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/chatbot" element={<ChatbotPage />} />
                     <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/adaptive-demo" element={<AdaptiveDemoPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="*" element={<NotFound />} />

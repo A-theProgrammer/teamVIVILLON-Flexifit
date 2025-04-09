@@ -12,7 +12,7 @@ const ChatbotContext = createContext<ChatbotContextType | undefined>(undefined);
 export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [suggestedWorkoutPlan, setSuggestedWorkoutPlan] = useState<WorkoutPlan | null>(null);
   const [processingAudio, setProcessingAudio] = useState(false);
-  const { user, savePlan, currentPlan, deletePlan, feedbackHistory } = useUser(); // Add feedbackHistory
+  const { user, savePlan, currentPlan, deletePlan, feedbackHistory } = useUser();
   
   const {
     messages,
@@ -43,8 +43,8 @@ export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ child
         currentPlan, 
         deletePlan,
         suggestedWorkoutPlan,
-        user,               // Pass user data
-        feedbackHistory     // Pass feedback history
+        user,
+        feedbackHistory
       );
     }
     
@@ -156,6 +156,7 @@ export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ child
         clearChat,
         processingAudio,
         executeCommand,
+        addBotMessage,
       }}
     >
       {children}

@@ -39,5 +39,6 @@ export type ChatbotContextType = {
   suggestedWorkoutPlan: WorkoutPlan | null;
   clearChat: () => void;
   processingAudio: boolean;
-  executeCommand: (command: ChatCommand) => void; // New function to execute commands
+  executeCommand: (command: ChatCommand) => void;
+  addBotMessage: (text: string) => void; //new
 };

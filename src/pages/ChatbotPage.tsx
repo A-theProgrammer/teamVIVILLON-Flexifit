@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { Mic, Send, StopCircle, Dumbbell, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { useUser } from '@/contexts/UserContext';
 import { WorkoutPlanDisplay } from '@/components/workout/WorkoutPlanDisplay';
 import { BodyAreaSelector } from '@/components/workout/BodyAreaSelector';
 import { CommandButton } from '@/components/chatbot/CommandButton';
+import { InjuryReportingModal } from '@/components/adaptive/InjuryReportingModal';
 import { useNavigate } from 'react-router-dom';
 import { CommandInfo } from '@/types/chat';
 
@@ -18,6 +18,8 @@ const ChatbotPage = () => {
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [selectedBodyAreas, setSelectedBodyAreas] = useState<string[]>([]);
   const [showBodySelector, setShowBodySelector] = useState(false);
+  const [showInjuryModal, setShowInjuryModal] = useState(false);
+  
   const messageEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const { 
@@ -28,9 +30,10 @@ const ChatbotPage = () => {
     suggestedWorkoutPlan, 
     clearChat, 
     processingAudio,
-    executeCommand 
+    executeCommand,
+    addBotMessage
   } = useChatbot();
-  const { isAuthenticated, login } = useUser();
+  const { isAuthenticated, login, updateHealthStatus } = useUser();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
   
@@ -40,6 +43,7 @@ const ChatbotPage = () => {
     { command: 'save plan', description: 'Save the current workout plan to your profile' },
     { command: '+1', description: 'Generate an alternative workout plan' },
     { command: 'delete plan', description: 'Delete your current workout plan' },
+    { command: 'report injury', description: 'Report an injury or physical limitation' },
   ];
   
   // Auto-login for demo purposes
@@ -68,6 +72,15 @@ const ChatbotPage = () => {
         (lastBotMessage.text.toLowerCase().includes("updateplan") || 
          lastBotMessage.text.toLowerCase().includes("generate a workout"))) {
       setShowBodySelector(true);
+    }
+  }, [messages]);
+  
+  // Detect when to show injury reporting modal
+  useEffect(() => {
+    const lastBotMessage = [...messages].reverse().find(m => m.sender === 'bot');
+    if (lastBotMessage && 
+        lastBotMessage.text.includes("I'll help you report an injury")) {
+      setShowInjuryModal(true);
     }
   }, [messages]);
   
@@ -143,6 +156,18 @@ const ChatbotPage = () => {
     } else {
       executeCommand('updateplan');
     }
+  };
+
+  // Handle injury submission
+  const handleInjurySubmit = (injuryData: any) => {
+    // Update user health status
+    updateHealthStatus(injuryData);
+    
+    // Close modal
+    setShowInjuryModal(false);
+    
+    // Add confirmation message
+    addBotMessage(`Thank you for reporting your injury. I've noted that you have issues with your ${injuryData.affectedAreas.join(', ')}. Your workout plan will be adjusted to accommodate this condition. Type "updateplan" to generate a new adaptive workout plan.`);
   };
   
   return (
@@ -304,6 +329,13 @@ const ChatbotPage = () => {
           )}
         </div>
       </div>
+
+      {/* Injury reporting modal */}
+      <InjuryReportingModal 
+        isOpen={showInjuryModal}
+        onClose={() => setShowInjuryModal(false)}
+        onSave={handleInjurySubmit}
+      />
     </div>
   );
 };

@@ -1,13 +1,15 @@
+// src/contexts/UserContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { UserModel, WorkoutPlan } from '@/types/user';
 import { toast } from 'sonner';
+import { AdaptiveEngine } from '@/adaptiveEngine/AdaptiveEngine';
 
 type UserContextType = {
   user: UserModel | null;
   currentPlan: WorkoutPlan | null;
   workoutPlans: WorkoutPlan[];
   completedExercises: string[];
-  feedbackHistory: any[]; // Add feedback history
+  feedbackHistory: any[];
   setUser: (user: UserModel) => void;
   updateUser: (updates: Partial<UserModel>) => void;
   savePlan: (plan: WorkoutPlan) => void;
@@ -16,7 +18,13 @@ type UserContextType = {
   login: (userId: string) => void;
   logout: () => void;
   toggleExerciseCompletion: (exerciseId: string, completed: boolean) => void;
-  submitExerciseFeedback: (feedback: any) => void; // Add feedback submission
+  submitExerciseFeedback: (feedback: any) => void;
+  updateHealthStatus: (healthStatus: {
+    affectedAreas: string[];
+    description: string;
+    severity: string;
+    reportedDate: string;
+  }) => void;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -29,7 +37,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentPlan, setCurrentPlan] = useState<WorkoutPlan | null>(null);
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [completedExercises, setCompletedExercises] = useState<string[]>([]);
-  const [feedbackHistory, setFeedbackHistory] = useState<any[]>([]); // Add feedback state
+  const [feedbackHistory, setFeedbackHistory] = useState<any[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   // Initialize or load from localStorage on mount
@@ -38,7 +46,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const storedPlan = localStorage.getItem('flexifit_current_plan');
     const storedPlans = localStorage.getItem('flexifit_workout_plans');
     const storedExercises = localStorage.getItem('flexifit_completed_exercises');
-    const storedFeedback = localStorage.getItem('flexifit_feedback_history'); // Add feedback loading
+    const storedFeedback = localStorage.getItem('flexifit_feedback_history');
     
     if (storedUser) {
       try {
@@ -77,7 +85,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
     
-    // Load feedback history
     if (storedFeedback) {
       try {
         const parsedFeedback = JSON.parse(storedFeedback);
@@ -111,7 +118,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('flexifit_completed_exercises', JSON.stringify(completedExercises));
   }, [completedExercises]);
   
-  // Save feedback history
   useEffect(() => {
     if (feedbackHistory.length > 0) {
       localStorage.setItem('flexifit_feedback_history', JSON.stringify(feedbackHistory));
@@ -204,17 +210,57 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
   
-  // Add feedback submission handler
+  // Add exercise feedback
   const submitExerciseFeedback = (feedback: any) => {
     const newFeedback = {
       ...feedback,
       timestamp: new Date().toISOString()
     };
     
-    const updatedFeedbackHistory = [...feedbackHistory, newFeedback];
-    setFeedbackHistory(updatedFeedbackHistory);
-    
+    setFeedbackHistory(prev => [...prev, newFeedback]);
     toast.success('Feedback recorded, your next plan will be adjusted accordingly');
+  };
+  
+  // Update health status
+  const updateHealthStatus = (healthStatus: any) => {
+    if (user) {
+      // Update user with new health status
+      const updatedUser = {
+        ...user,
+        staticAttributes: {
+          ...user.staticAttributes,
+          basicInformation: {
+            ...user.staticAttributes.basicInformation,
+            healthStatus: [
+              ...(user.staticAttributes.basicInformation.healthStatus || []),
+              healthStatus
+            ]
+          }
+        }
+      };
+      
+      setUserState(updatedUser);
+      toast.success('Health information updated. Your workout plans will be adjusted accordingly');
+      
+      // If there's a current plan, trigger an immediate plan update
+      if (currentPlan) {
+        try {
+          // Create new plan with health status consideration
+          const adaptiveEngine = new AdaptiveEngine();
+          const adjustedPlan = adaptiveEngine.generateAdaptiveWorkoutPlan(
+            updatedUser,
+            currentPlan,
+            feedbackHistory
+          );
+          
+          // Update current plan
+          setCurrentPlan(adjustedPlan);
+          toast.info('Your workout plan has been adjusted to accommodate your limitations');
+        } catch (error) {
+          console.error('Failed to adjust plan for health status', error);
+        }
+      }
+    }
   };
 
   const login = (userId: string = generateUserId()) => {
@@ -267,12 +313,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('flexifit_current_plan');
     localStorage.removeItem('flexifit_workout_plans');
     localStorage.removeItem('flexifit_completed_exercises');
-    localStorage.removeItem('flexifit_feedback_history'); // Clear feedback on logout
+    localStorage.removeItem('flexifit_feedback_history');
     setUserState(null);
     setCurrentPlan(null);
     setWorkoutPlans([]);
     setCompletedExercises([]);
-    setFeedbackHistory([]); // Clear feedback state
+    setFeedbackHistory([]);
     setIsAuthenticated(false);
     toast.info('Logged out');
   };
@@ -282,7 +328,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     currentPlan,
     workoutPlans,
     completedExercises,
-    feedbackHistory, // Expose feedback history
+    feedbackHistory,
     setUser,
     updateUser,
     savePlan,
@@ -291,7 +337,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     logout,
     toggleExerciseCompletion,
-    submitExerciseFeedback, // Expose feedback submission
+    submitExerciseFeedback,
+    updateHealthStatus,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

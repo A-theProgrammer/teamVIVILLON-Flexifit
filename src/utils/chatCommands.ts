@@ -10,8 +10,8 @@ export const processCommand = (
   currentPlan: WorkoutPlan | null,
   deletePlan: () => void,
   suggestedWorkoutPlan: WorkoutPlan | null,
-  user?: UserModel | null,             // Add user parameter
-  feedbackHistory?: any[]              // Add feedback history parameter
+  user?: UserModel | null,
+  feedbackHistory?: any[]
 ): string => {
   switch (command) {
     case 'updateplan':
@@ -65,19 +65,23 @@ export const processCommand = (
         return "You don't have an active workout plan to delete.";
       }
     
-    default:
-      return "I'm not sure what command you're trying to use. Try 'updateplan', 'save plan', '+1', or 'delete plan'.";
-  }
+      case 'report injury':
+        return "I'll help you report an injury or physical limitation. This will help me adjust your workout plan to accommodate your condition.";
+      
+      default:
+        return "I'm not sure what command you're trying to use. Try 'updateplan', 'save plan', '+1', 'delete plan', or 'report injury'.";
+  
+    }
 };
 
 export const isCommand = (text: string): boolean => {
-  const commands: ChatCommand[] = ['updateplan', 'save plan', '+1', 'delete plan'];
+  const commands: ChatCommand[] = ['updateplan', 'save plan', '+1', 'delete plan', 'report injury'];
   return commands.includes(text.toLowerCase().trim() as ChatCommand);
 };
 
 export const getCommandFromText = (text: string): ChatCommand | null => {
   const lowerCaseText = text.toLowerCase().trim();
-  const commands: ChatCommand[] = ['updateplan', 'save plan', '+1', 'delete plan'];
+  const commands: ChatCommand[] = ['updateplan', 'save plan', '+1', 'delete plan', 'report injury'];
   
   for (const cmd of commands) {
     if (lowerCaseText === cmd) {
@@ -94,5 +98,6 @@ export const getAllCommands = (): { command: ChatCommand; description: string }[
     { command: 'save plan', description: 'Save the current workout plan to your profile' },
     { command: '+1', description: 'Generate an alternative workout plan' },
     { command: 'delete plan', description: 'Delete your current workout plan' },
+    { command: 'report injury', description: 'Report an injury or physical limitation' },
   ];
 };

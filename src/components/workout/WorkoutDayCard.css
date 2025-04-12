@@ -1,0 +1,125 @@
+.workout-day-card {
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+  margin-bottom: 0.75rem;
+}
+
+.workout-day-card:hover {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.workout-day-card.expanded {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.workout-day-card.rest-day .day-header {
+  background-color: #f8f9fa;
+}
+
+.workout-day-card.today {
+  border: 2px solid #3498db;
+}
+
+.workout-day-card.today .day-header {
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+.day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background-color: #ecf0f1;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.day-header:hover {
+  background-color: #e0e6e8;
+}
+
+.day-info {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.day-number {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.day-of-week {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+}
+
+.day-date {
+  font-size: 0.8rem;
+  color: #95a5a6;
+}
+
+.today-badge {
+  position: absolute;
+  top: -8px;
+  right: -24px;
+  background-color: #3498db;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.day-focus {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.focus-label {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.exercise-count {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+}
+
+.expand-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: white;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #7f8c8d;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, transform 0.1s;
+  padding: 0;
+  line-height: 1;
+}
+
+.expand-button:hover {
+  background-color: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.expand-button:active {
+  transform: scale(0.95);
+}
+
+.day-content {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #eaeaea;
+}

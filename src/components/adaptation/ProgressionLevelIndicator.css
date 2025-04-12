@@ -1,0 +1,101 @@
+.progression-level-indicator {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.progression-level-indicator h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+  font-size: 1.2rem;
+}
+
+.progression-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.progression-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.progression-bar-container {
+  width: 100%;
+  margin-bottom: 1.25rem;
+  padding: 0 1rem;
+}
+
+.progression-bar {
+  position: relative;
+  height: 8px;
+  background: linear-gradient(to right, #e74c3c, #f39c12, #2ecc71, #3498db, #9b59b6);
+  border-radius: 4px;
+  margin: 1.5rem 0;
+}
+
+.progression-marker {
+  position: absolute;
+  top: -5px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  border: 2px solid white;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+.progression-labels {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  top: 15px;
+  left: 0;
+  right: 0;
+  font-size: 0.7rem;
+  color: #7f8c8d;
+}
+
+.progression-labels span {
+  position: relative;
+  transform: translateX(-50%);
+}
+
+.label-deload {
+  left: 0%;
+}
+
+.label-maintenance {
+  left: 20%;
+}
+
+.label-slow {
+  left: 40%;
+}
+
+.label-normal {
+  left: 60%;
+}
+
+.label-fast {
+  left: 80%;
+}
+
+.label-breakthrough {
+  left: 100%;
+}
+
+.progression-description {
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 0.95rem;
+  margin: 0;
+  max-width: 600px;
+}

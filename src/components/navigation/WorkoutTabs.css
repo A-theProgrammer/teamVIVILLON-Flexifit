@@ -1,0 +1,58 @@
+.workout-tabs {
+  margin-bottom: 1.5rem;
+}
+
+.tabs-header {
+  display: flex;
+  border-bottom: 2px solid #eaeaea;
+  margin-bottom: 1.5rem;
+  overflow-x: auto; /* For mobile responsiveness */
+}
+
+.tab-button {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #7f8c8d;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.tab-button:hover {
+  color: #34495e;
+}
+
+.tab-button.active {
+  color: #3498db;
+  font-weight: 600;
+}
+
+.tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #3498db;
+}
+
+.tab-content {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

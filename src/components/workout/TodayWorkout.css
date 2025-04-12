@@ -1,0 +1,387 @@
+.today-workout {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.today-header {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eaeaea;
+  background-color: #f8f9fa;
+}
+
+.today-date-info h2 {
+  margin: 0 0 0.25rem 0;
+  color: #2c3e50;
+  font-size: 1.4rem;
+}
+
+.week-number {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+.today-focus {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.focus-label {
+  font-weight: 600;
+  color: #3498db;
+  font-size: 1.2rem;
+  padding: 0.5rem 1rem;
+  background-color: rgba(52, 152, 219, 0.1);
+  border-radius: 4px;
+}
+
+/* Progress indicator styles */
+.workout-progress {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.progress-stat {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.stat-label {
+  font-weight: 500;
+  color: #34495e;
+  width: 100px;
+}
+
+.progress-bar-container {
+  flex: 1;
+  height: 8px;
+  background-color: #ecf0f1;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 1rem;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: #2ecc71;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-percentage {
+  font-weight: 600;
+  color: #2c3e50;
+  width: 50px;
+  text-align: right;
+}
+
+.workout-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.timer-label {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  margin-bottom: 0.25rem;
+}
+
+.timer-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  font-family: monospace;
+}
+
+/* Workout controls */
+.workout-controls {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.start-workout-button, 
+.end-workout-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.start-workout-button {
+  background-color: #3498db;
+  color: white;
+}
+
+.start-workout-button:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+.end-workout-button {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.end-workout-button:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+}
+
+/* Exercise list */
+.today-exercises {
+  padding: 1.5rem;
+}
+
+.today-exercises h3 {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  color: #2c3e50;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #eaeaea;
+  padding-bottom: 0.75rem;
+}
+
+.exercise-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.exercise-wrapper {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  padding: 0.75rem;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.exercise-wrapper:hover {
+  background-color: #f8f9fa;
+}
+
+.exercise-wrapper.completed {
+  background-color: #f0fff4;
+  border: 1px solid #d0f0d0;
+}
+
+.exercise-checkbox {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #bdc3c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.75rem;
+  margin-top: 0.5rem;
+  color: #2ecc71;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.exercise-wrapper.completed .exercise-checkbox {
+  background-color: #2ecc71;
+  border-color: #2ecc71;
+  color: white;
+}
+
+.exercise-content {
+  flex: 1;
+}
+
+.exercise-wrapper.completed .exercise-content {
+  opacity: 0.7;
+}
+
+/* Quick feedback section */
+.quick-feedback {
+  padding: 1.5rem;
+  border-top: 1px solid #eaeaea;
+  background-color: #f8f9fa;
+}
+
+.quick-feedback h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-size: 1.2rem;
+}
+
+.quick-feedback p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #7f8c8d;
+}
+
+.rating-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.rating-button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rating-button.selected {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.rating-button.selected::after {
+  content: "✓";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #2ecc71;
+  color: white;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.difficulty-1 {
+  background-color: #3498db;
+  color: white;
+}
+
+.difficulty-2 {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.difficulty-3 {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.difficulty-1:hover, .difficulty-2:hover, .difficulty-3:hover {
+  transform: translateY(-2px);
+  filter: brightness(110%);
+}
+
+.detailed-feedback-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: white;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.detailed-feedback-button:hover {
+  background-color: #f5f5f5;
+  border-color: #95a5a6;
+}
+
+/* Rest day styling */
+.rest-day .today-header {
+  background-color: #f8f9fa;
+  border-bottom-color: #eaeaea;
+}
+
+.rest-day-content {
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+
+.rest-day-content h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+  font-size: 1.5rem;
+}
+
+.rest-day-content p {
+  margin-bottom: 1.5rem;
+  color: #7f8c8d;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.rest-day-suggestions {
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  padding: 1.25rem;
+  max-width: 500px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.rest-day-suggestions h4 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: #34495e;
+  font-size: 1.1rem;
+}
+
+.rest-day-suggestions ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.rest-day-suggestions li {
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+}
+
+/* Media queries for mobile */
+@media (max-width: 768px) {
+  .today-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .today-focus {
+    align-items: flex-start;
+    margin-top: 0.75rem;
+  }
+  
+  .workout-progress {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .progress-stat {
+    margin-bottom: 1rem;
+  }
+  
+  .workout-timer {
+    align-items: flex-start;
+  }
+  
+  .rating-buttons {
+    flex-direction: column;
+  }
+}

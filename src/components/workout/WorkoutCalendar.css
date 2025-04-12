@@ -1,0 +1,149 @@
+.workout-calendar {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.current-month {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.month-nav-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #f8f9fa;
+  border: 1px solid #eaeaea;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.month-nav-button:hover {
+  background-color: #ecf0f1;
+  color: #3498db;
+}
+
+.weekday-headers {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.5rem;
+}
+
+.weekday-header {
+  text-align: center;
+  font-weight: 500;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.calendar-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.calendar-day:hover {
+  background-color: #f8f9fa;
+}
+
+.calendar-day.other-month {
+  color: #bdc3c7;
+}
+
+.calendar-day.current-day {
+  background-color: rgba(52, 152, 219, 0.1);
+  font-weight: bold;
+  color: #3498db;
+}
+
+.calendar-day.current-day:hover {
+  background-color: rgba(52, 152, 219, 0.15);
+}
+
+.calendar-day.has-workout {
+  font-weight: 500;
+}
+
+.workout-indicator {
+  position: absolute;
+  bottom: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #2ecc71;
+}
+
+.day-number {
+  font-size: 0.9rem;
+}
+
+.calendar-legend {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eaeaea;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin: 0 0.75rem;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.legend-color.has-workout {
+  background-color: #2ecc71;
+}
+
+.legend-color.current-day-legend {
+  background-color: #3498db;
+}
+
+/* Media queries for mobile */
+@media (max-width: 576px) {
+  .calendar-day {
+    height: 36px;
+    padding: 0.25rem;
+  }
+  
+  .day-number {
+    font-size: 0.8rem;
+  }
+}

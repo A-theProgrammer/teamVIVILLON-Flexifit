@@ -191,36 +191,74 @@ const AppContent: React.FC = () => {
   }, [feedbackHistory, feedbackNeeded]);
 
   // Handle updating user with simulated time passage
-  const handleSimulateTime = (days: number) => {
-    if (!user) return;
+// Handle updating user with simulated time passage
+const handleSimulateTime = (days: number) => {
+  if (!user) return;
 
-    const updatedUser = { ...user };
+  const updatedUser = { ...user };
+  
+  // Create a new date object from the current date and add days
+  const newDate = new Date(currentDate);
+  newDate.setDate(newDate.getDate() + days);
+  setCurrentDate(newDate);
+  
+  // Update last workout date
+  if (updatedUser.dynamicAttributes.workoutProgress) {
+    const lastWorkoutDate = new Date(updatedUser.dynamicAttributes.workoutProgress.lastWorkout);
+    lastWorkoutDate.setDate(lastWorkoutDate.getDate() + days);
+    updatedUser.dynamicAttributes.workoutProgress.lastWorkout = lastWorkoutDate.toISOString();
     
-    // Create a new date object from the current date and add days
-    const newDate = new Date(currentDate);
-    newDate.setDate(newDate.getDate() + days);
-    setCurrentDate(newDate);
-    
-    // Update last workout date
-    if (updatedUser.dynamicAttributes.workoutProgress) {
-      const lastWorkoutDate = new Date(updatedUser.dynamicAttributes.workoutProgress.lastWorkout);
-      lastWorkoutDate.setDate(lastWorkoutDate.getDate() + days);
-      updatedUser.dynamicAttributes.workoutProgress.lastWorkout = lastWorkoutDate.toISOString();
-      
-      // Simulate streaks (randomly decrease for realism)
-      const streakDays = updatedUser.dynamicAttributes.workoutProgress.streakDays;
-      if (Math.random() > 0.7) {
-        // 30% chance of breaking streak
-        updatedUser.dynamicAttributes.workoutProgress.streakDays = Math.floor(streakDays * 0.5);
-      } else {
-        // Otherwise increase streak by some days (not necessarily all simulated days)
-        const daysToAdd = Math.floor(days * (0.7 + Math.random() * 0.3));
-        updatedUser.dynamicAttributes.workoutProgress.streakDays = streakDays + daysToAdd;
-      }
+    // Simulate streaks (randomly decrease for realism)
+    const streakDays = updatedUser.dynamicAttributes.workoutProgress.streakDays;
+    if (Math.random() > 0.7) {
+      // 30% chance of breaking streak
+      updatedUser.dynamicAttributes.workoutProgress.streakDays = Math.floor(streakDays * 0.5);
+    } else {
+      // Otherwise increase streak by some days (not necessarily all simulated days)
+      const daysToAdd = Math.floor(days * (0.7 + Math.random() * 0.3));
+      updatedUser.dynamicAttributes.workoutProgress.streakDays = streakDays + daysToAdd;
     }
     
-    setUser(updatedUser);
-  };
+    // Simulate completed exercises for more realistic completion rate
+    if (workoutPlan) {
+      // Initialize completedExercises array if it doesn't exist
+      if (!updatedUser.dynamicAttributes.workoutProgress.completedExercises) {
+        updatedUser.dynamicAttributes.workoutProgress.completedExercises = [];
+      }
+      
+      // Generate random completed exercises
+      const newCompletedExercises: string[] = [];
+      
+      // For each simulated day, potentially complete some exercises
+      for (let i = 0; i < days; i++) {
+        // 70% chance of working out on a given day
+        if (Math.random() > 0.3) {
+          // Pick a random day from the workout plan
+          const randomDayIndex = Math.floor(Math.random() * workoutPlan.days.length);
+          const workoutDay = workoutPlan.days[randomDayIndex];
+          
+          // Complete a random number of exercises from that day
+          const exerciseCount = workoutDay.exercises.length;
+          const completedCount = Math.floor(Math.random() * (exerciseCount + 1));
+          
+          // Generate exercise IDs for the completed exercises
+          for (let j = 0; j < completedCount; j++) {
+            const exerciseId = `${workoutDay.dayNumber}-${j}`;
+            newCompletedExercises.push(exerciseId);
+          }
+        }
+      }
+      
+      // Add new completed exercises to the user's record
+      updatedUser.dynamicAttributes.workoutProgress.completedExercises = [
+        ...updatedUser.dynamicAttributes.workoutProgress.completedExercises,
+        ...newCompletedExercises
+      ];
+    }
+  }
+  
+  setUser(updatedUser);
+};
 
   // Handle user profile update
   const handleUserProfileUpdate = (updatedUser: UserModel) => {

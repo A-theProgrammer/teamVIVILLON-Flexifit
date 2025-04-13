@@ -13,6 +13,7 @@ import TodayWorkout from './components/workout/TodayWorkout';
 import WorkoutCalendar from './components/workout/WorkoutCalendar';
 import SimulationControls from './components/simulation/SimulationControls';
 import WorkoutTabs from './components/navigation/WorkoutTabs';
+import StatisticsDashboard from './components/statistics/StatisticsDashboard'; // 导入统计仪表盘
 import { ProgressionLevel, UserFeedback } from './adaptiveEngine/types';
 import { UserModel } from './types/user';
 import './App.css';
@@ -43,6 +44,123 @@ const AppContent: React.FC = () => {
   const [adaptationInProgress, setAdaptationInProgress] = useState(false);
   const [lastAdaptationTime, setLastAdaptationTime] = useState<Date | null>(null);
   const [adaptationFeedbackTab, setAdaptationFeedbackTab] = useState(false);
+
+  // 添加进展水平历史数据状态
+  const [progressionLevels, setProgressionLevels] = useState<Array<{
+    date: Date;
+    level: ProgressionLevel;
+  }>>([]);
+
+  // 生成进展水平历史数据
+  useEffect(() => {
+    if (feedbackHistory.length > 0) {
+      // 基于反馈历史生成进展水平数据
+      const levels: Array<{ date: Date; level: ProgressionLevel }> = [];
+      let prevLevel = ProgressionLevel.NormalProgress;
+      
+      // 按日期分组反馈
+      const feedbackByDate: Record<string, UserFeedback[]> = {};
+      
+      feedbackHistory.forEach(feedback => {
+        const date = new Date(feedback.completionTime);
+        const dateKey = date.toISOString().split('T')[0];
+        
+        if (!feedbackByDate[dateKey]) {
+          feedbackByDate[dateKey] = [];
+        }
+        
+        feedbackByDate[dateKey].push(feedback);
+      });
+      
+      // 基于反馈模式生成进展水平
+      Object.entries(feedbackByDate)
+        .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+        .forEach(([dateStr, dateFeedback], index) => {
+          // 计算平均难度和愉悦度
+          const avgDifficulty = dateFeedback.reduce((sum, fb) => sum + fb.difficulty, 0) / dateFeedback.length;
+          const avgEnjoyment = dateFeedback.reduce((sum, fb) => sum + fb.enjoyment, 0) / dateFeedback.length;
+          
+          // 根据反馈模式确定进展水平
+          let newLevel: ProgressionLevel;
+          
+          if (avgDifficulty > 4.5) {
+            // 非常困难，可能需要减负
+            newLevel = Math.random() < 0.7 ? ProgressionLevel.Deload : ProgressionLevel.Maintenance;
+          } else if (avgDifficulty > 4 && avgEnjoyment < 2.5) {
+            // 困难且不愉快
+            newLevel = Math.random() < 0.6 ? ProgressionLevel.SlowProgress : ProgressionLevel.Maintenance;
+          } else if (avgDifficulty < 2 && avgEnjoyment > 4) {
+            // 太容易且愉快
+            newLevel = Math.random() < 0.8 ? ProgressionLevel.FastProgress : ProgressionLevel.Breakthrough;
+          } else if (avgDifficulty > 3 && avgDifficulty <= 4 && avgEnjoyment >= 3) {
+            // 有适当挑战且愉快
+            newLevel = Math.random() < 0.7 ? ProgressionLevel.ModerateProgress : ProgressionLevel.NormalProgress;
+          } else {
+            // 默认情况
+            const options = [
+              ProgressionLevel.SlowProgress,
+              ProgressionLevel.NormalProgress,
+              ProgressionLevel.ModerateProgress
+            ];
+            newLevel = options[Math.floor(Math.random() * options.length)];
+          }
+          
+          // 定期添加减负周（每4-6周）
+          if (index > 0 && index % (4 + Math.floor(Math.random() * 3)) === 0) {
+            newLevel = ProgressionLevel.Deload;
+          }
+          
+          // 有时保持前一级别以保持连续性
+          if (Math.random() < 0.3 && index > 0) {
+            newLevel = prevLevel;
+          }
+          
+          levels.push({
+            date: new Date(dateStr),
+            level: newLevel
+          });
+          
+          prevLevel = newLevel;
+        });
+      
+      setProgressionLevels(levels);
+    } else {
+      // 如果没有反馈，提供示例数据
+      const now = new Date();
+      const sampleLevels = [];
+      
+      for (let i = 30; i >= 0; i -= 3) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        
+        // 模拟典型的进展模式
+        let level: ProgressionLevel;
+        
+        if (i > 25) {
+          level = ProgressionLevel.SlowProgress;
+        } else if (i > 18) {
+          level = ProgressionLevel.NormalProgress;
+        } else if (i > 15) {
+          level = ProgressionLevel.Deload; // 减负周
+        } else if (i > 10) {
+          level = ProgressionLevel.Maintenance;
+        } else if (i > 6) {
+          level = ProgressionLevel.ModerateProgress;
+        } else if (i > 3) {
+          level = ProgressionLevel.FastProgress;
+        } else {
+          level = getCurrentProgressionLevel();
+        }
+        
+        sampleLevels.push({
+          date,
+          level
+        });
+      }
+      
+      setProgressionLevels(sampleLevels);
+    }
+  }, [feedbackHistory]);
 
   // Monitor feedback history and trigger adaptation when needed
   useEffect(() => {
@@ -222,9 +340,9 @@ const AppContent: React.FC = () => {
                   {renderWorkoutView()}
                 </div>
                 
-                {/* Additional Tabs for Feedback and Adaptation */}
+                {/* 扩展标签页，增加统计标签 */}
                 <WorkoutTabs 
-                  tabTitles={['Submit Feedback', 'Adaptation']}
+                  tabTitles={['Submit Feedback', 'Adaptation', 'Statistics']}
                   initialTabIndex={adaptationFeedbackTab ? 1 : 0}
                 >
                   {/* Tab 1: Feedback */}
@@ -240,6 +358,22 @@ const AppContent: React.FC = () => {
                     <ProgressionLevelIndicator progressionLevel={getCurrentProgressionLevel()} />
                     <AdaptiveChangesDisplay changes={adaptiveChanges} />
                   </div>
+                  
+                  {/* Tab 3: Statistics - 新增 */}
+                  <div className="tab-panel">
+                  {user ? (
+                    <StatisticsDashboard 
+                      user={user}
+                      workoutPlan={workoutPlan}
+                      feedbackHistory={feedbackHistory}
+                      progressionLevels={progressionLevels}
+                    />
+                  ) : (
+                    <div className="empty-chart-message">
+                      <p>No user data available. Please create a user profile first.</p>
+                    </div>
+                  )}
+                </div>
                 </WorkoutTabs>
               </>
             )}

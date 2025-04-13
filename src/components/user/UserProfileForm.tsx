@@ -9,6 +9,10 @@ interface UserProfileFormProps {
 }
 
 const UserProfileForm: React.FC<UserProfileFormProps> = ({ user, onSave, onCancel }) => {
+  // Get existing target metrics if available
+  const targetWeight = user.dynamicAttributes.targetMetrics?.targetWeight?.toString() || '';
+  const targetBodyFat = user.dynamicAttributes.targetMetrics?.targetBodyFat?.toString() || '';
+
   // Create form state from user data
   const [formData, setFormData] = useState({
     name: user.staticAttributes.basicInformation.name || '',
@@ -23,8 +27,8 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ user, onSave, onCance
     frequencyPerWeek: user.staticAttributes.exerciseBackground.currentExerciseHabits.frequencyPerWeek,
     sessionDuration: user.staticAttributes.exerciseBackground.currentExerciseHabits.sessionDuration,
     healthStatus: user.staticAttributes.basicInformation.healthStatus || [],
-    targetWeight: '',
-    targetBodyFat: '',
+    targetWeight: targetWeight,
+    targetBodyFat: targetBodyFat,
   });
 
   // State for multi-step form
@@ -89,6 +93,15 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ user, onSave, onCance
       if (formData.sessionDuration <= 0) {
         newErrors.sessionDuration = 'Please enter a valid session duration';
       }
+    } else if (step === 3) {
+      // Validate target weight and body fat if provided
+      if (formData.targetWeight && (isNaN(Number(formData.targetWeight)) || Number(formData.targetWeight) <= 0)) {
+        newErrors.targetWeight = 'Please enter a valid target weight';
+      }
+      
+      if (formData.targetBodyFat && (isNaN(Number(formData.targetBodyFat)) || Number(formData.targetBodyFat) < 5 || Number(formData.targetBodyFat) > 50)) {
+        newErrors.targetBodyFat = 'Please enter a valid body fat percentage (5-50)';
+      }
     }
     
     setErrors(newErrors);
@@ -139,7 +152,33 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ user, onSave, onCance
             },
           },
         },
+        dynamicAttributes: {
+          ...user.dynamicAttributes,
+        }
       };
+      
+      // Add target metrics to dynamic attributes if provided
+      if (!updatedUser.dynamicAttributes.trainingData) {
+        updatedUser.dynamicAttributes.trainingData = [];
+      }
+      
+      // Add target metrics
+      if (formData.targetWeight || formData.targetBodyFat) {
+        // Create targetMetrics object if it doesn't exist
+        if (!updatedUser.dynamicAttributes.targetMetrics) {
+          updatedUser.dynamicAttributes.targetMetrics = {};
+        }
+        
+        // Add target weight if provided
+        if (formData.targetWeight) {
+          updatedUser.dynamicAttributes.targetMetrics.targetWeight = Number(formData.targetWeight);
+        }
+        
+        // Add target body fat if provided
+        if (formData.targetBodyFat) {
+          updatedUser.dynamicAttributes.targetMetrics.targetBodyFat = Number(formData.targetBodyFat);
+        }
+      }
       
       // Save the updated user
       onSave(updatedUser);
@@ -435,7 +474,9 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ user, onSave, onCance
                   min="20"
                   max="300"
                   placeholder="Your goal weight"
+                  className={errors.targetWeight ? 'error' : ''}
                 />
+                {errors.targetWeight && <div className="error-message">{errors.targetWeight}</div>}
               </div>
               
               <div className="form-group">
@@ -449,7 +490,9 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ user, onSave, onCance
                   min="5"
                   max="50"
                   placeholder="Your goal body fat %"
+                  className={errors.targetBodyFat ? 'error' : ''}
                 />
+                {errors.targetBodyFat && <div className="error-message">{errors.targetBodyFat}</div>}
               </div>
             </div>
             

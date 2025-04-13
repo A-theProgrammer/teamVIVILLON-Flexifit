@@ -1,4 +1,3 @@
-
 export interface UserModel {
   userId: string;
   staticAttributes: {
@@ -65,6 +64,10 @@ export interface UserModel {
       streakDays: number;
     };
     savedWorkoutPlans?: WorkoutPlan[];
+    targetMetrics?: {
+      targetWeight?: number;
+      targetBodyFat?: number;
+    };
   };
 }
 
@@ -74,7 +77,7 @@ export interface WorkoutPlan {
   description: string;
   createdAt: string;
   days: WorkoutDay[];
-  targetBodyAreas?: string[]; // Added for body area targeting
+  targetBodyAreas?: string[];
 }
 
 export interface WorkoutDay {
